@@ -1,0 +1,12 @@
+<phpunit convertErrorsToExceptions="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true"
+         printerClass="Codedungeon\PHPUnitPrettyResultPrinter\Printer"
+         stopOnFailure="true">
+
+    <testsuites>
+        <testsuite>
+            <directory>tests</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>

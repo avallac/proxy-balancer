@@ -1,0 +1,27 @@
+{
+    "name": "avallac/proxy-balancer",
+    "license": "MIT",
+    "type": "project",
+    "homepage": "https://github.com/avallac/proxy-balancer",
+    "autoload": {
+        "psr-4": { "AVAllAC\\ProxyBalancer\\": "src/",  "AVAllAC\\ProxyBalancer\\Tests\\": "tests/" }
+    },
+    "require": {
+        "react/http": "^0.8.1",
+        "symfony/routing": "^4.0",
+        "pimple/pimple": "^3.2",
+        "avallac/proxy-balancer-client": "^1.0"
+    },
+    "authors": [
+        {
+            "name": "Petr Petrenko",
+            "role": "maintainer"
+        }
+    ],
+    "require-dev": {
+        "codedungeon/phpunit-result-printer": "^0.5.4",
+        "mockery/mockery": "^1.0",
+        "phpunit/phpunit": "^6.5",
+        "phpunit/php-code-coverage": "^5.3"
+    }
+}
