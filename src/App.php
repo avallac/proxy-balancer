@@ -42,7 +42,7 @@ class App extends Container
         $this->initRoutes();
         $context = new RequestContext('/');
         $this->matcher = new UrlMatcher($this->routes, $context);
-        $metrics = json_decode(file_get_contents(__DIR__ . '/../statistic.json'), true);
+        $metrics = json_decode(file_get_contents(__DIR__ . '/../statistic.json'), true) ?? [];
         $services = $this['config']['service'];
         $proxy = $this->readProxyList(__DIR__ . '/../etc/proxy.list');
         $this[ProxyManager::class] = new ProxyManager(new Time(), $services, $proxy, $metrics);
