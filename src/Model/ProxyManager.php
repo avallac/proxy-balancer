@@ -66,7 +66,6 @@ class ProxyManager
         foreach ($this->proxyList[$service] as $proxy) {
             if ($proxy->uri === $uri) {
                 $proxy->allowUseAfter = $time + 3600;
-                $this->setAnswerStatistic($service, $uri, 60);
             }
         }
     }
