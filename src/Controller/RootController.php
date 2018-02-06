@@ -41,9 +41,12 @@ class RootController
         $proxyManager = $this->app[ProxyManager::class];
         foreach ($proxyManager->getProxyList() as $service => $list) {
             $out .= $service . "\n";
+            usort($list, function ($a, $b) {
+                return $a->allowUseAfter > $b->allowUseAfter;
+            });
             foreach ($list as $item) {
                 $out .= '-> ' . $item->uri . '|';
-                $out .= $item->allowUseAfter . '|';
+                $out .= date("c", $item->allowUseAfter) . '|';
                 $out .= $item->metric . "\n";
             }
         }
