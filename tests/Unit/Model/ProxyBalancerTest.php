@@ -59,7 +59,6 @@ class ProxyBalancerTest extends BaseTestCase
         $this->assertSame(['avito' => ['proxy1' => 0.0, 'proxy2' => 0.0]], $pb->exportMetric());
         $pb->reportBadProxy('avito', 'proxy1');
         $this->assertEquals(1, $pb->countAllowed('avito'));
-        $this->assertSame(['avito' => ['proxy2' => 0.0, 'proxy1' => 0.6]], $pb->exportMetric());
-
+        $this->assertSame(['avito' => ['proxy1' => 0.0, 'proxy2' => 0.0]], $pb->exportMetric());
     }
 }
