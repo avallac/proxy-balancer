@@ -1,5 +1,8 @@
-proxy-balancer
+proxy-balancer [![Build Status](https://img.shields.io/travis/avallac/proxy-balancer.svg)](https://travis-ci.org/avallac/proxy-balancer)
 ==============
+
+[![Latest Stable Version](https://img.shields.io/packagist/v/avallac/proxy-balancer.svg)](https://packagist.org/packages/avallac/proxy-balancer)
+
 
 Описание
 --------
