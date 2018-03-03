@@ -18,8 +18,10 @@ proxy-balancer [![Build Status](https://img.shields.io/travis/avallac/proxy-bala
 Установка
 ---------
 1. Запустите ```composer create-project avallac/proxy-balancer```
-2. Создайте proxy-balancer/etc/config.yml по следующему шаблону:
+2. При необходимости отредактируйте proxy-balancer/etc/config.yml:
 ```
+listenPort: Номер слушающего порта
+debug: Отладка
 auth:
     username: <username>
     password: <password>
@@ -34,7 +36,16 @@ service:
 <username>:<password>@<ip/host>:<port>
 <username>:<password>@<ip/host>:<port>
 ```
-4. Запустите ```php ./proxy-balancer/bin/run.php```
+4. Запустите ```php ./proxy-balancer/bin/proxy-balancer.php```
+
+Методы
+------
+1. GET / в ответ возвращать JSON с количеством доступных прокси для каждого сервиса.
+2. GET /status в ответ возвращать JSON с временем с момента запуска сервиса, в секундах.
+3. GET /debug
+4. GET /get/{service}
+5. POST /report/{service}
+6. POST /complaint/{service}
 
 Использование
 -------------

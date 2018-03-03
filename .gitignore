@@ -1,4 +1,6 @@
 /statistic.json
-.idea
-vendor/
-etc/
+/.idea
+/report
+/vendor
+/composer.lock
+/etc/config.yml

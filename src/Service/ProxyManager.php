@@ -1,6 +1,8 @@
 <?php
 
-namespace AVAllAC\ProxyBalancer\Model;
+namespace AVAllAC\ProxyBalancer\Service;
+
+use AVAllAC\ProxyBalancer\Model\Proxy;
 
 class ProxyManager
 {
@@ -8,7 +10,7 @@ class ProxyManager
     protected $proxyList = [];
     protected $services;
 
-    public function __construct(Time $time, array $services, array $proxyList, array $metrics)
+    public function __construct(MicroTime $time, array $services, array $proxyList, array $metrics)
     {
         $this->time = $time;
         $this->services = $services;

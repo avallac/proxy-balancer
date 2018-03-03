@@ -1,0 +1,7 @@
+listenPort: 8080
+debug: 1
+auth:
+    username: username
+    password: password
+service:
+    img: 5

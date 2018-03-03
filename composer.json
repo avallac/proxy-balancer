@@ -23,5 +23,10 @@
         "mockery/mockery": "^1.0",
         "phpunit/phpunit": "^6.5",
         "phpunit/php-code-coverage": "^5.3"
+    },
+    "scripts": {
+        "post-create-project-cmd": [
+            "php -r \"copy('etc/config.yml.orig', 'etc/config.yml');\""
+        ]
     }
 }

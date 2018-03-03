@@ -1,17 +1,14 @@
 <?php
 
-namespace AVAllAC\ProxyBalancer\Tests\Unit\Model;
+namespace AVAllAC\ProxyBalancer\Service;
 
-use AVAllAC\ProxyBalancer\Model\Time;
-use \Mockery as m;
-use AVAllAC\ProxyBalancer\Model\ProxyManager;
-use AVAllAC\ProxyBalancer\Tests\BaseTestCase;
+use PHPUnit\Framework\TestCase;
 
-class ProxyBalancerTest extends BaseTestCase
+class ProxyManagerTest extends TestCase
 {
     public function testConstruct()
     {
-        $time = m::mock(Time::class);
+        $time = $this->createMock(MicroTime::class);
         $storedMetrics = ['avito' => ['proxy1' => 10.5]];
         $pb = new ProxyManager($time, ['avito' => 11], ['proxy1', 'proxy2'], $storedMetrics);
         $this->assertSame(['avito' => ['proxy2' => 0.0, 'proxy1' => 10.5]], $pb->exportMetric());
@@ -19,7 +16,8 @@ class ProxyBalancerTest extends BaseTestCase
 
     public function testGet()
     {
-        $time = m::mock(Time::class, ['get' => 10000]);
+        $time = $this->createMock(MicroTime::class);
+        $time->method('get')->willReturn(10000);
         $storedMetrics = ['avito' => ['proxy1' => 10.5]];
         $pb = new ProxyManager($time, ['avito' => 11], ['proxy1', 'proxy2'], $storedMetrics);
         $this->assertEquals('proxy2', $pb->get('avito'));
@@ -29,7 +27,8 @@ class ProxyBalancerTest extends BaseTestCase
 
     public function testReport()
     {
-        $time = m::mock(Time::class, ['get' => 10000]);
+        $time = $this->createMock(MicroTime::class);
+        $time->method('get')->willReturn(10000);
         $pb = new ProxyManager($time, ['avito' => 11], ['proxy1', 'proxy2'], []);
         $this->assertSame(['avito' => ['proxy1' => 0.0, 'proxy2' => 0.0]], $pb->exportMetric());
         $pb->setAnswerStatistic('avito', 'proxy1', 30);
@@ -38,11 +37,13 @@ class ProxyBalancerTest extends BaseTestCase
         $this->assertSame(['avito' => ['proxy1' => 0.3, 'proxy2' => 0.6]], $pb->exportMetric());
         $pb->setAnswerStatistic('avito', 'proxy2', 60);
         $this->assertSame(['avito' => ['proxy1' => 0.3, 'proxy2' => 1.194]], $pb->exportMetric());
+        $pb->setAnswerStatistic('avito', 'proxy4', 60);
     }
 
     public function testAllowed()
     {
-        $time = m::mock(Time::class, ['get' => 10000]);
+        $time = $this->createMock(MicroTime::class);
+        $time->method('get')->willReturn(10000);
         $storedMetrics = ['avito' => ['proxy1' => 10.5]];
         $pb = new ProxyManager($time, ['avito' => 11], ['proxy1', 'proxy2'], $storedMetrics);
         $this->assertEquals(2, $pb->countAllowed('avito'));
@@ -54,11 +55,29 @@ class ProxyBalancerTest extends BaseTestCase
 
     public function testReportBad()
     {
-        $time = m::mock(Time::class, ['get' => 10000]);
-        $pb = new ProxyManager($time, ['avito' => 11], ['proxy1', 'proxy2'], []);
-        $this->assertSame(['avito' => ['proxy1' => 0.0, 'proxy2' => 0.0]], $pb->exportMetric());
-        $pb->reportBadProxy('avito', 'proxy1');
-        $this->assertEquals(1, $pb->countAllowed('avito'));
-        $this->assertSame(['avito' => ['proxy1' => 0.0, 'proxy2' => 0.0]], $pb->exportMetric());
+        $time = $this->createMock(MicroTime::class);
+        $time->method('get')->willReturn(10000);
+        $pm = new ProxyManager($time, ['avito' => 11], ['proxy1', 'proxy2'], []);
+        $this->assertSame(['avito' => ['proxy1' => 0.0, 'proxy2' => 0.0]], $pm->exportMetric());
+        $pm->reportBadProxy('avito', 'proxy1');
+        $this->assertEquals(1, $pm->countAllowed('avito'));
+        $this->assertSame(['avito' => ['proxy1' => 0.0, 'proxy2' => 0.0]], $pm->exportMetric());
+    }
+
+    public function testGetService()
+    {
+        $time = $this->createMock(MicroTime::class);
+        $pm = new ProxyManager($time, ['avito' => 11], ['proxy1', 'proxy2'], []);
+        $this->assertSame(['avito' => 11], $pm->getServices());
+    }
+
+    public function testGetProxyList()
+    {
+        $time = $this->createMock(MicroTime::class);
+        $pm = new ProxyManager($time, ['avito' => 11], ['proxy1', 'proxy2'], []);
+        $proxyListAvito = $pm->getProxyList()['avito'];
+        $this->assertSame(2, count($proxyListAvito));
+        $this->assertSame('proxy1', $proxyListAvito[0]->uri);
+        $this->assertSame('proxy2', $proxyListAvito[1]->uri);
     }
 }

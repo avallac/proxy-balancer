@@ -2,82 +2,73 @@
 
 namespace AVAllAC\ProxyBalancer\Controller;
 
-use AVAllAC\ProxyBalancer\Model\ProxyManager;
+use AVAllAC\ProxyBalancer\Service\ProxyManager;
 use Psr\Http\Message\ServerRequestInterface;
+use Symfony\Component\Routing\Exception\InvalidParameterException;
 
 class RootController
 {
-    protected $app;
+    protected $proxyManager;
 
-    public function __construct($app)
+    public function __construct(ProxyManager $proxyManager)
     {
-        $this->app = $app;
+        $this->proxyManager = $proxyManager;
     }
 
-    protected function checkInput($request, $required)
-    {
-        foreach ($required as $item) {
-            if (!isset($request->getParsedBody()['uri'])) {
-                throw new \Exception($item . " required");
-            }
-        }
-    }
-
-    public function status(ServerRequestInterface $request)
+    public function services(ServerRequestInterface $request)
     {
         $result = [];
-        /** @var ProxyManager $proxyManager */
-        $proxyManager = $this->app[ProxyManager::class];
-        foreach (array_keys($proxyManager->getServices()) as $service) {
-            $result[$service] = $proxyManager->countAllowed($service);
+        foreach (array_keys($this->proxyManager->getServices()) as $service) {
+            $result[$service] = $this->proxyManager->countAllowed($service);
         }
-        return print_r($result, true);
+        return json_encode($result);
     }
 
     public function debug(ServerRequestInterface $request)
     {
-        $out = '';
-        /** @var ProxyManager $proxyManager */
-        $proxyManager = $this->app[ProxyManager::class];
-        foreach ($proxyManager->getProxyList() as $service => $list) {
-            $out .= $service . "\n";
+        $result = [];
+        foreach ($this->proxyManager->getProxyList() as $service => $list) {
+            $result[$service] = [];
             usort($list, function ($a, $b) {
                 return $a->allowUseAfter > $b->allowUseAfter;
             });
             foreach ($list as $item) {
-                $out .= '-> ' . $item->uri . '|';
-                $out .= date("c", $item->allowUseAfter) . '|';
-                $out .= $item->metric . "\n";
+                $result[$service][] = [
+                    'uri' => $item->uri,
+                    'allowUseAfter' => date("c", $item->allowUseAfter),
+                    'metric' => $item->metric
+                ];
             }
         }
-        return $out;
+        return json_encode($result);
     }
 
     public function get(ServerRequestInterface $request, string $service)
     {
-        /** @var ProxyManager $proxyManager */
-        $proxyManager = $this->app[ProxyManager::class];
-        return $proxyManager->get($service);
+        return $this->proxyManager->get($service);
     }
 
     public function complaint(ServerRequestInterface $request, string $service)
     {
-        $this->checkInput($request, ['uri']);
+        if (!isset($request->getParsedBody()['uri'])) {
+            throw new InvalidParameterException("uri required");
+        }
         $uri = urldecode($request->getParsedBody()['uri']);
-        /** @var ProxyManager $proxyManager */
-        $proxyManager = $this->app[ProxyManager::class];
-        $proxyManager->reportBadProxy($service, $uri);
-        return 'ok';
+        $this->proxyManager->reportBadProxy($service, $uri);
+        return json_encode('ok');
     }
 
     public function report(ServerRequestInterface $request, string $service)
     {
-        $this->checkInput($request, ['result', 'uri']);
+        if (!isset($request->getParsedBody()['uri'])) {
+            throw new InvalidParameterException("uri required");
+        }
+        if (!isset($request->getParsedBody()['result'])) {
+            throw new InvalidParameterException("result required");
+        }
         $result = $request->getParsedBody()['result'];
         $uri = urldecode($request->getParsedBody()['uri']);
-        /** @var ProxyManager $proxyManager */
-        $proxyManager = $this->app[ProxyManager::class];
-        $proxyManager->setAnswerStatistic($service, $uri, $result);
-        return 'ok';
+        $this->proxyManager->setAnswerStatistic($service, $uri, $result);
+        return json_encode('ok');
     }
 }
