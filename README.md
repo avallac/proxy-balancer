@@ -2,6 +2,7 @@ proxy-balancer [![Build Status](https://img.shields.io/travis/avallac/proxy-bala
 ==============
 
 [![Latest Stable Version](https://img.shields.io/packagist/v/avallac/proxy-balancer.svg)](https://packagist.org/packages/avallac/proxy-balancer)
+[![codecov.io](https://codecov.io/github/avallac/proxy-balancer/coverage.svg?branch=master)](https://codecov.io/github/avallac/proxy-balancer?branch=master)
 
 
 Описание
