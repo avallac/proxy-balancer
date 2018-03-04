@@ -34,7 +34,7 @@ $server = new Server(function (ServerRequestInterface $request) use ($pimple) {
 });
 
 $loop->addPeriodicTimer(3600, function () use ($pimple) {
-    $export = $pimple['cacheManager']->exportMetric();
+    $export = $pimple['proxyManager']->exportMetric();
     file_put_contents(__DIR__ . '/../statistic.json', json_encode($export));
 });
 
