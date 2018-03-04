@@ -4,3 +4,4 @@
 /vendor
 /composer.lock
 /etc/config.yml
+/etc/proxy.list
