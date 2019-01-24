@@ -84,10 +84,16 @@ class ProxyManagerTest extends TestCase
     public function testGetStatisticByGroups()
     {
         $time = $this->createMock(MicroTime::class);
+        $time->method('get')->willReturn(100000);
         $storedMetrics = ['google' => ['proxy1' => 10.5, 'proxy2' => 0.45]];
         $pb = new ProxyManager($time, ['google' => 11], ['proxy1', 'proxy2#tag1'], $storedMetrics);
         $this->assertSame(
-            ['google' => ['allowed' => 2, 'allowedPercent' => '100.00', 'metric' => '5.47']],
+            ['google' =>
+                [
+                    'tag1' => ['allowed' => 1, 'allowedPercent' => '100.00', 'metric' => '0.45'],
+                    'default' => ['allowed' => 1, 'allowedPercent' => '100.00', 'metric' => '10.50']
+                ]
+            ],
             $pb->getStatisticByGroups()
         );
     }
