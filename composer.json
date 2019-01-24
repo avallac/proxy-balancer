@@ -28,5 +28,10 @@
         "post-create-project-cmd": [
             "php -r \"copy('etc/config.yml.orig', 'etc/config.yml');\""
         ]
+    },
+    "config": {
+        "platform": {
+            "php": "7.2.0"
+        }
     }
 }

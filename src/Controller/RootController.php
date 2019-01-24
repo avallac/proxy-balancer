@@ -29,14 +29,12 @@ class RootController
         $result = [];
         foreach ($this->proxyManager->getProxyList() as $service => $list) {
             $result[$service] = [];
-            usort($list, function ($a, $b) {
-                return $a->allowUseAfter > $b->allowUseAfter;
-            });
+            $list->sort();
             foreach ($list as $item) {
                 $result[$service][] = [
-                    'uri' => $item->uri,
-                    'allowUseAfter' => date("c", $item->allowUseAfter),
-                    'metric' => $item->metric
+                    'uri' => $item->getUri(),
+                    'allowUseAfter' => date("c", $item->getAllowUseAfter()),
+                    'metric' => $item->getMetric()
                 ];
             }
         }

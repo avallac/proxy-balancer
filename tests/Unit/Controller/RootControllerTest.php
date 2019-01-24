@@ -2,6 +2,8 @@
 
 namespace AVAllAC\ProxyBalancer\Controller;
 
+use AVAllAC\ProxyBalancer\Model\Proxy;
+use AVAllAC\ProxyBalancer\Model\ProxyCollection;
 use AVAllAC\ProxyBalancer\Service\ProxyManager;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
@@ -20,12 +22,12 @@ class RootControllerTest extends TestCase
 
     public function testDebug()
     {
+        $collection = new ProxyCollection();
+        $collection->add(new Proxy('uri1', 'default', 1000000, 100));
+        $collection->add(new Proxy('uri3', 'default', 1000025, 105));
         $request = $this->createMock(ServerRequestInterface::class);
         $proxyManager = $this->createMock(ProxyManager::class);
-        $proxyManager->method('getProxyList')->willReturn(['p1' => [
-            (object)['uri' => 'uri1', 'allowUseAfter' => 1000000, 'metric' => 100],
-            (object)['uri' => 'uri3', 'allowUseAfter' => 1000025, 'metric' => 105]
-        ]]);
+        $proxyManager->method('getProxyList')->willReturn(['p1' => $collection]);
         $rootController = new RootController($proxyManager);
         $b1 = '{"uri":"uri1","allowUseAfter":"1970-01-12T13:46:40+00:00","metric":100}';
         $b2 = '{"uri":"uri3","allowUseAfter":"1970-01-12T13:47:05+00:00","metric":105}';

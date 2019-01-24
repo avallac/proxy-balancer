@@ -3,11 +3,16 @@
 namespace AVAllAC\ProxyBalancer\Service;
 
 use AVAllAC\ProxyBalancer\Model\Proxy;
+use AVAllAC\ProxyBalancer\Model\ProxyCollection;
+use AVAllAC\ProxyBalancer\Model\ProxyStatistic;
 
 class ProxyManager
 {
     protected $time;
+
+    /** @var ProxyCollection[] */
     protected $proxyList = [];
+
     protected $services;
 
     public function __construct(MicroTime $time, array $services, array $proxyList, array $metrics)
@@ -15,14 +20,17 @@ class ProxyManager
         $this->time = $time;
         $this->services = $services;
         foreach (array_keys($this->services) as $service) {
-            $this->proxyList[$service] = [];
+            $this->proxyList[$service] = new ProxyCollection();
             foreach ($proxyList as $e) {
-                $metric = $metrics[$service][$e] ?? 0;
-                $this->proxyList[$service][] = new Proxy($e, $metric);
+                if (preg_match('|(.+)#(.+)|', $e, $m)) {
+                    $metric = $metrics[$service][$m[1]] ?? 0;
+                    $this->proxyList[$service]->add(new Proxy($m[1], $m[2], 0, $metric));
+                } else {
+                    $metric = $metrics[$service][$e] ?? 0;
+                    $this->proxyList[$service]->add(new Proxy($e, 'default', 0, $metric));
+                }
             }
-            usort($this->proxyList[$service], function ($a, $b) {
-                return $a->metric > $b->metric;
-            });
+            $this->proxyList[$service]->sort();
         }
     }
 
@@ -31,8 +39,10 @@ class ProxyManager
         $output = [];
         foreach (array_keys($this->services) as $service) {
             $output[$service] = [];
-            foreach ($this->proxyList[$service] as $proxy) {
-                $output[$service][$proxy->uri] = $proxy->metric;
+
+            foreach ($this->proxyList[$service] as $id => $proxy) {
+
+                $output[$service][$proxy->getUri()] = $proxy->getMetric();
             }
         }
         return $output;
@@ -42,9 +52,9 @@ class ProxyManager
     {
         $time = $this->time->get();
         foreach ($this->proxyList[$service] as $proxy) {
-            if ($proxy->allowUseAfter < $time) {
-                $proxy->allowUseAfter = $time + $this->services[$service];
-                return $proxy->uri;
+            if ($proxy->getAllowUseAfter() < $time) {
+                $proxy->setAllowUseAfter($time + $this->services[$service]);
+                return $proxy->getUri();
             }
         }
         return null;
@@ -55,7 +65,7 @@ class ProxyManager
         $result = 0;
         $time = $this->time->get();
         foreach ($this->proxyList[$service] as $proxy) {
-            if ($proxy->allowUseAfter < $time) {
+            if ($proxy->getAllowUseAfter() < $time) {
                 $result ++;
             }
         }
@@ -66,8 +76,8 @@ class ProxyManager
     {
         $time = $this->time->get();
         foreach ($this->proxyList[$service] as $proxy) {
-            if ($proxy->uri === $uri) {
-                $proxy->allowUseAfter = $time + 3600;
+            if ($proxy->getUri() === $uri) {
+                $proxy->setAllowUseAfter($time + 3600);
             }
         }
     }
@@ -75,14 +85,27 @@ class ProxyManager
     public function setAnswerStatistic($service, $uri, $time)
     {
         foreach ($this->proxyList[$service] as $proxy) {
-            if ($proxy->uri === $uri) {
-                $proxy->metric = $proxy->metric * 0.99 + $time * 0.01;
-                usort($this->proxyList[$service], function ($a, $b) {
-                    return $a->metric > $b->metric;
-                });
+            if ($proxy->getUri() === $uri) {
+                $proxy->setMetric($proxy->getMetric() * 0.99 + $time * 0.01);
+                $this->proxyList[$service]->sort();
                 return;
             }
         }
+    }
+
+    public function getStatisticByGroups()
+    {
+        $output = [];
+        $time = $this->time->get();
+        foreach (array_keys($this->services) as $service) {
+            $proxyStatistic = new ProxyStatistic();
+            foreach ($this->proxyList[$service] as $proxy) {
+                $proxyStatistic->add($proxy->getTag(), $proxy->getMetric(), $proxy->getAllowUseAfter() < $time);
+                $output[$service][$proxy->getTag()] = $proxy->getMetric();
+            }
+            $output[$service] = $proxyStatistic->export();
+        }
+        return $output;
     }
 
     public function getServices()
@@ -90,7 +113,10 @@ class ProxyManager
         return $this->services;
     }
 
-    public function getProxyList()
+    /**
+     * @return ProxyCollection[]
+     */
+    public function getProxyList(): array
     {
         return $this->proxyList;
     }
