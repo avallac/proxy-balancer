@@ -16,7 +16,7 @@ class ControllersProvider implements ServiceProviderInterface
         };
 
         $pimple['statusController'] = function () use ($pimple) {
-            return new StatusController($pimple['microTime']);
+            return new StatusController($pimple['microTime'], $pimple['proxyManager']);
         };
     }
 }
