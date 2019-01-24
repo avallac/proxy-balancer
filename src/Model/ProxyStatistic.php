@@ -8,7 +8,8 @@ class ProxyStatistic
 
     public function add(string $tag, float $metric, bool $allowed)
     {
-        $this->proxy[$tag] = [
+        $this->proxy[$tag] = $this->proxy[$tag] ?? [];
+        $this->proxy[$tag][] = [
             'metric' => $metric,
             'allowed' => $allowed
         ];
@@ -16,17 +17,23 @@ class ProxyStatistic
 
     public function export()
     {
-        $allowed = 0;
-        $metric = 0;
-        $count = count($this->proxy);
-        foreach ($this->proxy as $item) {
-            $metric += $item['metric'];
-            $allowed ++;
+        $result = [];
+        foreach ($this->proxy as $tag => $array) {
+            $allowed = 0;
+            $metric = 0;
+            $count = count($this->proxy);
+            foreach ($array as $item) {
+                $metric += $item['metric'];
+                if ($item['allowed']) {
+                    $allowed++;
+                }
+            }
+            $result[$tag] = [
+                'allowed' => $allowed,
+                'allowedPercent' => sprintf('%.2f', $allowed/$count * 100),
+                'metric' => sprintf('%.2f', $metric/$count),
+            ];
         }
-        return [
-            'allowed' => $allowed,
-            'allowedPercent' => sprintf('%.2f', $allowed/$count * 100),
-            'metric' => sprintf('%.2f', $metric/$count),
-        ];
+        return $result;
     }
 }
