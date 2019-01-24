@@ -21,7 +21,7 @@ class ProxyStatistic
         foreach ($this->proxy as $tag => $array) {
             $allowed = 0;
             $metric = 0;
-            $count = count($this->proxy);
+            $count = count($array);
             foreach ($array as $item) {
                 $metric += $item['metric'];
                 if ($item['allowed']) {
